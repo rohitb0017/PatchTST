@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/kaggle/working/PatchTST/data_provider')
+sys.path.append('/kaggle/working/PatchTST/data_provider/')
 
 from data_provider.data_factory import data_provider
 from exp.exp_basic import Exp_Basic
