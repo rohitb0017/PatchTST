@@ -36,8 +36,10 @@ class Dataset_ETT_hour(Dataset):
         self.timeenc = timeenc
         self.freq = freq
 
-        self.root_path = root_path
-        self.data_path = data_path
+        # self.root_path = root_path
+        # self.data_path = data_path
+        self.root_path = '/kaggle/working/PatchTST'
+        self.data_path = '/dataset/ETTh1.csv'
         self.__read_data__()
 
     def __read_data__(self):
