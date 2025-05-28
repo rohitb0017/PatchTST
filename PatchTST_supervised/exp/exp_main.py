@@ -174,7 +174,7 @@ class Exp_Main(Exp_Basic):
                     f_dim = -1 if self.args.features == 'MS' else 0
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
                     batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
-                    print(outputs.shape,batch_y.shape)
+                    # print(outputs.shape,batch_y.shape)
                     loss = criterion(outputs, batch_y)
                     train_loss.append(loss.item())
 
@@ -270,7 +270,7 @@ class Exp_Main(Exp_Basic):
                 # print(outputs.shape,batch_y.shape)
                 outputs = outputs[:, -self.args.pred_len:, f_dim:]
                 batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
-                print(outputs.shape,batch_y.shape)
+                # print(outputs.shape,batch_y.shape)
                 outputs = outputs.detach().cpu().numpy()
                 batch_y = batch_y.detach().cpu().numpy()
 
