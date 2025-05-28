@@ -299,16 +299,27 @@ class Exp_Main(Exp_Basic):
         print(f"Original (scaled) inputs shape: {inputs.shape}")
         if hasattr(self, 'scaler') and self.scaler is not None:
             print("Applying inverse transformation to inputs, predictions, and ground truths...")
-            # Inverse transform predictions
-            preds_unscaled = self.scaler.inverse_transform(preds)
-            # Inverse transform ground truths
-            trues_unscaled = self.scaler.inverse_transform(trues)
-            # Inverse transform inputs (ensure inputs matches scaler's expected shape if multivariate)
-            # For multivariate inputs, you might need to reshape before inverse_transform if scaler expects 2D.
-            # Example for 3D input (batch, seq_len, features) to 2D (batch*seq_len, features)
-            inputs_reshaped_for_scaler = inputx.reshape(-1, inputs.shape[-1])
+            # Reshape predictions for inverse transformation
+            # From (N, L, F) to (N*L, F)
+            preds_reshaped_for_scaler = preds.reshape(-1, preds.shape[-1])
+            preds_unscaled_reshaped = self.scaler.inverse_transform(preds_reshaped_for_scaler)
+            # Reshape back to original (N, L, F)
+            preds_unscaled = preds_unscaled_reshaped.reshape(preds.shape)
+
+            # Reshape ground truths for inverse transformation
+            # From (N, L, F) to (N*L, F)
+            trues_reshaped_for_scaler = trues.reshape(-1, trues.shape[-1])
+            trues_unscaled_reshaped = self.scaler.inverse_transform(trues_reshaped_for_scaler)
+            # Reshape back to original (N, L, F)
+            trues_unscaled = trues_unscaled_reshaped.reshape(trues.shape)
+
+            # Reshape inputs for inverse transformation
+            # From (N, L, F) to (N*L, F)
+            inputs_reshaped_for_scaler = inputs.reshape(-1, inputs.shape[-1])
             inputs_unscaled_reshaped = self.scaler.inverse_transform(inputs_reshaped_for_scaler)
-            inputs_unscaled = inputs_unscaled_reshaped.reshape(inputs.shape) # Reshape back to original 3D
+            # Reshape back to original (N, L, F)
+            inputs_unscaled = inputs_unscaled_reshaped.reshape(inputs.shape)
+
         else:
             print("No scaler found or inverse transformation skipped. Displaying scaled values.")
             preds_unscaled = preds
