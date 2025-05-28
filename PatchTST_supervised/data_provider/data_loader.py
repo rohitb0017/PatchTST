@@ -194,8 +194,8 @@ class Dataset_ETT_minute(Dataset):
 
 class Dataset_Custom(Dataset):
     def __init__(self, root_path, flag='train', size=None,
-                 features='S', data_path='ETTh1.csv',
-                 target='OT', scale=True, timeenc=0, freq='h'):
+                 features='S', data_path='AMAZON.csv',
+                 target='OT', scale=True, timeenc=0, freq='d'):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -223,16 +223,15 @@ class Dataset_Custom(Dataset):
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
+        df_raw = pd.read_csv('/content/PatchTST/dataset/AMAZON.csv')
 
         '''
         df_raw.columns: ['date', ...(other features), target feature]
         '''
         cols = list(df_raw.columns)
         cols.remove(self.target)
-        cols.remove('date')
-        df_raw = df_raw[['date'] + cols + [self.target]]
+        cols.remove('Date')
+        df_raw = df_raw[['Date'] + cols + [self.target]]
         # print(cols)
         num_train = int(len(df_raw) * 0.7)
         num_test = int(len(df_raw) * 0.2)
@@ -258,7 +257,7 @@ class Dataset_Custom(Dataset):
             data = df_data.values
 
         df_stamp = df_raw[['date']][border1:border2]
-        df_stamp['date'] = pd.to_datetime(df_stamp.date)
+        df_stamp['date'] = pd.to_datetime(df_stamp.Date)
         if self.timeenc == 0:
             df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
             df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
