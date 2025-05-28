@@ -103,7 +103,7 @@ class Exp_Main(Exp_Basic):
     def train(self, setting):
         train_data, train_loader, _ = self._get_data(flag='train')
         vali_data, vali_loader, _ = self._get_data(flag='val')
-        test_data, test_loader = self._get_data(flag='test')
+        test_data, test_loader, _ = self._get_data(flag='test')
 
         path = os.path.join(self.args.checkpoints, setting)
         if not os.path.exists(path):
