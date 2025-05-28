@@ -285,6 +285,35 @@ class Exp_Main(Exp_Basic):
                     gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
                     pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
                     visual(gt, pd, os.path.join(folder_path, str(i) + '.pdf'))
+        # Concatenate all collected data from batches
+        preds = np.concatenate(preds, axis=0)
+        trues = np.concatenate(trues, axis=0)
+        inputs = np.concatenate(inputx, axis=0) # <--- Concatenate all inputs  
+
+        # --- Inverse Transformation (CRUCIAL for real-world values if data was scaled) ---
+        # This part assumes you have a self.scaler object from your data_provider
+        # If your data is NOT scaled, you can remove this section or set preds_unscaled = preds etc.
+        print(f"Original (scaled) inputs shape: {inputs.shape}")
+        if hasattr(self, 'scaler') and self.scaler is not None:
+            print("Applying inverse transformation to inputs, predictions, and ground truths...")
+            # Inverse transform predictions
+            preds_unscaled = self.scaler.inverse_transform(preds)
+            # Inverse transform ground truths
+            trues_unscaled = self.scaler.inverse_transform(trues)
+            # Inverse transform inputs (ensure inputs matches scaler's expected shape if multivariate)
+            # For multivariate inputs, you might need to reshape before inverse_transform if scaler expects 2D.
+            # Example for 3D input (batch, seq_len, features) to 2D (batch*seq_len, features)
+            inputs_reshaped_for_scaler = inputx.reshape(-1, inputs.shape[-1])
+            inputs_unscaled_reshaped = self.scaler.inverse_transform(inputs_reshaped_for_scaler)
+            inputs_unscaled = inputs_unscaled_reshaped.reshape(inputs.shape) # Reshape back to original 3D
+        else:
+            print("No scaler found or inverse transformation skipped. Displaying scaled values.")
+            preds_unscaled = preds
+            trues_unscaled = trues
+            inputs_unscaled = inputs
+
+
+                
 
         if self.args.test_flop:
             test_params_flop((batch_x.shape[1],batch_x.shape[2]))
@@ -313,8 +342,12 @@ class Exp_Main(Exp_Basic):
 
         # np.save(folder_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe,rse, corr]))
         np.save(folder_path + 'pred.npy', preds)
-        # np.save(folder_path + 'true.npy', trues)
-        # np.save(folder_path + 'x.npy', inputx)
+        np.save(folder_path + 'true.npy', trues)
+        np.save(folder_path + 'x.npy', inputx)
+
+        print(f"Full predictions saved to: {os.path.join(folder_path, 'pred.npy')}")
+        print(f"Full ground truths saved to: {os.path.join(folder_path, 'true.npy')}")
+        print(f"Full input sequences saved to: {os.path.join(folder_path, 'x.npy')}")
         return
 
     def predict(self, setting, load=False):
