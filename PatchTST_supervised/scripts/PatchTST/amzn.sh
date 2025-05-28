@@ -11,7 +11,7 @@ model_name=PatchTST
 root_path_name=./dataset/
 data_path_name=AMAZON.csv
 model_id_name=AMZN
-data_name=AMZN
+data_name=custom
 
 random_seed=2021
 #for pred_len in 96 192 336 720
