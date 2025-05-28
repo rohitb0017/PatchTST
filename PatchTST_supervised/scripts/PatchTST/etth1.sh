@@ -17,7 +17,7 @@ random_seed=2021
 #for pred_len in 96 192 336 720
 for pred_len in 96
 do
-    python -u /kaggle/working/PatchTST/PatchTST_supervised/run_longExp.py \
+    python -u /content/PatchTST/PatchTST_supervised/run_longExp.py \
       --random_seed $random_seed \
       --is_training 1 \
       --root_path $root_path_name \
