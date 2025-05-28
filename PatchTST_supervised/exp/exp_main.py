@@ -44,7 +44,7 @@ class Exp_Main(Exp_Basic):
 
     def _get_data(self, flag):
         data_set, data_loader = data_provider(self.args, flag)
-        return data_set, data_loader
+        return data_set, data_loader, data_set.scaler
 
     def _select_optimizer(self):
         model_optim = optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
@@ -221,7 +221,10 @@ class Exp_Main(Exp_Basic):
         return self.model
 
     def test(self, setting, test=0):
-        test_data, test_loader = self._get_data(flag='test')
+        # Capture the scaler returned by _get_data
+        test_data, test_loader, scaler = self._get_data(flag='test')
+        # Assign the scaler to the Exp_Main instance
+        self.scaler = scaler # <--- ADDED: Assign scaler to self
         
         if test:
             print('loading model')
