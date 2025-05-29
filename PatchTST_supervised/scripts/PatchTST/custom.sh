@@ -9,8 +9,8 @@ seq_len=336
 model_name=PatchTST
 
 root_path_name=./dataset/
-data_path_name=AMAZON.csv
-model_id_name=AMZN
+data_path_name=Beijing_Weather.csv
+model_id_name=Beijing_Weather
 data_name=custom
 
 random_seed=2021
