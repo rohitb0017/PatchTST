@@ -194,8 +194,8 @@ class Dataset_ETT_minute(Dataset):
 
 class Dataset_Custom(Dataset):
     def __init__(self, root_path, flag='train', size=None,
-                 features='M', data_path='AMAZON.csv',
-                 target='Volume', scale=True, timeenc=0, freq='d'):
+                 features='M', data_path='Beijing_Weather.csv',
+                 target=None, scale=True, timeenc=0, freq='h'):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -223,15 +223,26 @@ class Dataset_Custom(Dataset):
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv('/content/PatchTST/dataset/AMAZON.csv')
+        df_raw = pd.read_csv('/content/PatchTST/dataset/Beijing_Weather.csv')
 
         '''
         df_raw.columns: ['Date', ...(other features), target feature]
         '''
         cols = list(df_raw.columns)
-        cols.remove(self.target)
-        cols.remove('Date')
-        df_raw = df_raw[['Date'] + cols + [self.target]]
+        # Safely remove target if it exists and is not None
+        if self.target is not None and self.target in cols:
+            cols.remove(self.target)
+        # Ensure 'Date' is removed from the general cols list if it was there
+        if 'Date' in cols:
+            cols.remove('Date')
+
+        # Reconstruct df_raw to ensure 'Date' is first, then other features, then target (if exists)
+        # This handles the case where self.target is None for 'M' features
+        if self.target is None:
+            df_raw = df_raw[['Date'] + cols] # 'Date' first, then other features
+        else:
+            df_raw = df_raw[['Date'] + cols + [self.target]] # 'Date', other features, then target
+
         # print(cols)
         num_train = int(len(df_raw) * 0.7)
         num_test = int(len(df_raw) * 0.2)
@@ -257,12 +268,12 @@ class Dataset_Custom(Dataset):
             data = df_data.values
 
         df_stamp = df_raw[['Date']][border1:border2]
-        df_stamp['Date'] = pd.to_datetime(df_stamp.Date, format='%d-%m-%Y')
+        df_stamp['Date'] = pd.to_datetime(df_stamp.Date, format='%d-%m-%Y %H:%M')
         if self.timeenc == 0:
-            df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
-            df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
-            df_stamp['weekday'] = df_stamp.date.apply(lambda row: row.weekday(), 1)
-            df_stamp['hour'] = df_stamp.date.apply(lambda row: row.hour, 1)
+            df_stamp['month'] = df_stamp.Date.apply(lambda row: row.month, 1)
+            df_stamp['day'] = df_stamp.Date.apply(lambda row: row.day, 1)
+            df_stamp['weekday'] = df_stamp.Date.apply(lambda row: row.weekday(), 1)
+            df_stamp['hour'] = df_stamp.Date.apply(lambda row: row.hour, 1)
             data_stamp = df_stamp.drop(['Date'], axis=1).values
         elif self.timeenc == 1:
             data_stamp = time_features(pd.to_datetime(df_stamp['Date'].values), freq=self.freq)
@@ -294,8 +305,8 @@ class Dataset_Custom(Dataset):
 
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None,
-                 features='M', data_path='AMAZON.csv',
-                 target='Volume', scale=True, inverse=False, timeenc=0, freq='d', cols=None):
+                 features='M', data_path='Beijing_Weather.csv',
+                 target=None, scale=True, inverse=False, timeenc=0, freq='h', cols=None):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -324,18 +335,28 @@ class Dataset_Pred(Dataset):
         self.scaler = StandardScaler()
         #df_raw = pd.read_csv(os.path.join(self.root_path,
                                           #self.data_path))
-        df_raw = pd.read_csv('/content/PatchTST/dataset/AMAZON.csv')
+        df_raw = pd.read_csv('/content/PatchTST/dataset/Beijing_Weather.csv')
         '''
-        df_raw.columns: ['date', ...(other features), target feature]
+        df_raw.columns: ['date', ...(other features), target feature] # This comment is now inconsistent with 'Date' usage
         '''
         if self.cols:
             cols = self.cols.copy()
-            cols.remove(self.target)
-        else:
+            if self.target is not None and self.target in cols:
+                cols.remove(self.target)
+        else: # This block will be executed for Beijing_Weather.csv based on your args
             cols = list(df_raw.columns)
-            cols.remove(self.target)
-            cols.remove('Date')
-        df_raw = df_raw[['date'] + cols + [self.target]]
+            if self.target is not None and self.target in cols:
+                cols.remove(self.target)
+            if 'Date' in cols: # Ensure 'Date' is removed from general list
+                cols.remove('Date') # Keep 'Date' here as per user request
+
+        # Reconstruct df_raw to ensure 'Date' is first, then other features, then target (if exists)
+        # Fix the df_raw assignment to use 'Date' and handle self.target being None
+        if self.target is None: # For features='M'
+            df_raw = df_raw[['Date'] + cols] # 'Date' first, then other features
+        else: # For features='S' or 'MS'
+            df_raw = df_raw[['Date'] + cols + [self.target]] # 'Date', other features, then target
+            
         border1 = len(df_raw) - self.seq_len
         border2 = len(df_raw)
 
@@ -352,21 +373,21 @@ class Dataset_Pred(Dataset):
             data = df_data.values
 
         tmp_stamp = df_raw[['Date']][border1:border2]
-        tmp_stamp['Date'] = pd.to_datetime(tmp_stamp.Date, format='%d-%m-%Y')
-        pred_dates = pd.date_range(tmp_stamp.date.values[-1], periods=self.pred_len + 1, freq=self.freq)
+        tmp_stamp['Date'] = pd.to_datetime(tmp_stamp.Date, format='%d-%m-%Y %H:%M')
+        pred_dates = pd.date_range(tmp_stamp.Date.values[-1], periods=self.pred_len + 1, freq=self.freq)
 
         df_stamp = pd.DataFrame(columns=['Date'])
-        df_stamp.date = list(tmp_stamp.date.values) + list(pred_dates[1:])
+        df_stamp.Date = list(tmp_stamp.Date.values) + list(pred_dates[1:])
         if self.timeenc == 0:
-            df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
-            df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
-            df_stamp['weekday'] = df_stamp.date.apply(lambda row: row.weekday(), 1)
-            df_stamp['hour'] = df_stamp.date.apply(lambda row: row.hour, 1)
-            df_stamp['minute'] = df_stamp.date.apply(lambda row: row.minute, 1)
+            df_stamp['month'] = df_stamp.Date.apply(lambda row: row.month, 1)
+            df_stamp['day'] = df_stamp.Date.apply(lambda row: row.day, 1)
+            df_stamp['weekday'] = df_stamp.Date.apply(lambda row: row.weekday(), 1)
+            df_stamp['hour'] = df_stamp.Date.apply(lambda row: row.hour, 1)
+            df_stamp['minute'] = df_stamp.Date.apply(lambda row: row.minute, 1)
             df_stamp['minute'] = df_stamp.minute.map(lambda x: x // 15)
-            data_stamp = df_stamp.drop(['date'], axis=1).values
+            data_stamp = df_stamp.drop(['Date'], axis=1).values
         elif self.timeenc == 1:
-            data_stamp = time_features(pd.to_datetime(df_stamp['Date'].values),format='%d-%m-%Y', freq=self.freq)
+            data_stamp = time_features(pd.to_datetime(df_stamp['Date'].values),format='%d-%m-%Y %H:%M', freq=self.freq)
             data_stamp = data_stamp.transpose(1, 0)
 
         self.data_x = data[border1:border2]
