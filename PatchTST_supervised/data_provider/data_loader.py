@@ -257,7 +257,7 @@ class Dataset_Custom(Dataset):
             data = df_data.values
 
         df_stamp = df_raw[['Date']][border1:border2]
-        df_stamp['Date'] = pd.to_datetime(df_stamp.Date)
+        df_stamp['Date'] = pd.to_datetime(df_stamp.Date, format='%d-%m-%Y')
         if self.timeenc == 0:
             df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
             df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
@@ -352,7 +352,7 @@ class Dataset_Pred(Dataset):
             data = df_data.values
 
         tmp_stamp = df_raw[['Date']][border1:border2]
-        tmp_stamp['Date'] = pd.to_datetime(tmp_stamp.Date)
+        tmp_stamp['Date'] = pd.to_datetime(tmp_stamp.Date, format='%d-%m-%Y')
         pred_dates = pd.date_range(tmp_stamp.date.values[-1], periods=self.pred_len + 1, freq=self.freq)
 
         df_stamp = pd.DataFrame(columns=['Date'])
@@ -366,7 +366,7 @@ class Dataset_Pred(Dataset):
             df_stamp['minute'] = df_stamp.minute.map(lambda x: x // 15)
             data_stamp = df_stamp.drop(['date'], axis=1).values
         elif self.timeenc == 1:
-            data_stamp = time_features(pd.to_datetime(df_stamp['Date'].values), freq=self.freq)
+            data_stamp = time_features(pd.to_datetime(df_stamp['Date'].values),format='%d-%m-%Y', freq=self.freq)
             data_stamp = data_stamp.transpose(1, 0)
 
         self.data_x = data[border1:border2]
