@@ -194,8 +194,8 @@ class Dataset_ETT_minute(Dataset):
 
 class Dataset_Custom(Dataset):
     def __init__(self, root_path, flag='train', size=None,
-                 features='S', data_path='AMAZON.csv',
-                 target='OT', scale=True, timeenc=0, freq='d'):
+                 features='M', data_path='AMAZON.csv',
+                 target='Volume', scale=True, timeenc=0, freq='d'):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -226,7 +226,7 @@ class Dataset_Custom(Dataset):
         df_raw = pd.read_csv('/content/PatchTST/dataset/AMAZON.csv')
 
         '''
-        df_raw.columns: ['date', ...(other features), target feature]
+        df_raw.columns: ['Date', ...(other features), target feature]
         '''
         cols = list(df_raw.columns)
         cols.remove(self.target)
