@@ -41,5 +41,6 @@ do
       --stride 8\
       --des 'Exp' \
       --train_epochs 100\
+      --patience 50\
       --itr 1 --batch_size 128 --learning_rate 0.0001 
 done
