@@ -223,8 +223,8 @@ class Dataset_Custom(Dataset):
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv('/content/PatchTST/dataset/Beijing_Weather.csv')
-
+        # df_raw = pd.read_csv('/content/PatchTST/dataset/Beijing_Weather.csv')
+        df_raw = pd.read_csv('/kaggle/working/PatchTST/dataset/Beijing_Weather.csv')
         '''
         df_raw.columns: ['Date', ...(other features), target feature]
         '''
@@ -335,7 +335,8 @@ class Dataset_Pred(Dataset):
         self.scaler = StandardScaler()
         #df_raw = pd.read_csv(os.path.join(self.root_path,
                                           #self.data_path))
-        df_raw = pd.read_csv('/content/PatchTST/dataset/Beijing_Weather.csv')
+        # df_raw = pd.read_csv('/content/PatchTST/dataset/Beijing_Weather.csv')
+        df_raw = pd.read_csv('/kaggle/working/PatchTST/dataset/Beijing_Weather.csv')
         '''
         df_raw.columns: ['date', ...(other features), target feature] # This comment is now inconsistent with 'Date' usage
         '''
