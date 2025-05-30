@@ -5,7 +5,7 @@ fi
 if [ ! -d "./logs/LongForecasting" ]; then
     mkdir ./logs/LongForecasting
 fi
-seq_len=336
+seq_len=1024
 model_name=PatchTST
 
 root_path_name=./dataset/
@@ -15,7 +15,7 @@ data_name=custom
 
 random_seed=2021
 #for pred_len in 96 192 336 720
-for pred_len in 96
+for pred_len in 192
 do
    # python -u /content/PatchTST/PatchTST_supervised/run_longExp.py \
      python -u /kaggle/working/PatchTST/PatchTST_supervised/run_longExp.py \
