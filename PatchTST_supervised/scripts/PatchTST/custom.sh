@@ -40,7 +40,7 @@ do
       --patch_len 16\
       --stride 8\
       --des 'Exp' \
-      --train_epochs 100\
+      --train_epochs 10\
       --patience 50\
       --itr 1 --batch_size 128 --learning_rate 0.0001 
 done
